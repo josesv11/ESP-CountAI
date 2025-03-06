@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32-CAM Control</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        button {
+            background: #ff4b5c;
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0px 5px 15px rgba(255, 75, 92, 0.3);
+            outline: none;
+        }
+
+        button:hover {
+            background: #e8414e;
+            transform: translateY(-2px);
+            box-shadow: 0px 7px 20px rgba(255, 75, 92, 0.5);
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #debug {
+            margin-top: 20px;
+            font-size: 16px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            width: 80%;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>ESP32-CAM Control</h1>
+    <button id="toggleButton">Cargando...</button>
+    <p id="status">Estado: Desconocido</p>
+    <div id="debug"></div>
+
+    <script>
+        const serverUrl = 'http://IPDELESPCAM'; // Nueva IP de la ESP32-CAM
+        const toggleButton = document.getElementById('toggleButton');
+        const statusText = document.getElementById('status');
+        const debugDiv = document.getElementById('debug');
+
+        debugDiv.innerText = `Server URL: ${serverUrl}`;
+
+        function updateStatus() {
+            fetch(`${serverUrl}/status`) 
+                .then(response => response.text())
+                .then(status => {
+                    statusText.innerText = `Estado: ${status}`;
+                    toggleButton.innerText = status === 'Pausado' ? 'Reanudar' : 'Pausar';
+                })
+                .catch(() => {
+                    statusText.innerText = 'No disponible';
+                });
+        }
+
+        function toggleCamera() {
+            fetch(`${serverUrl}/toggle`)
+                .then(() => updateStatus())
+                .catch(() => {
+                    debugDiv.innerText += '\nError al cambiar estado';
+                });
+        }
+
+        toggleButton.addEventListener('click', toggleCamera);
+        setInterval(updateStatus, 5000);
+        updateStatus();
+    </script>
+</body>
+</html>
